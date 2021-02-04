@@ -1,10 +1,13 @@
 [package]
 name = "jami-rs"
 version = "0.1.0"
-authors = ["Sébastien Blin <sebastien.blin@savoirfairelinux.com>"]
+description = "Jami library in Rust"
+authors = ["Sébastien Blin <contact@enconn.fr>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+keywords = ["jami", "tui"]
+repository = "https://github.com/AmarOk1412/jami-rs"
+license = "BSD-3-Clause"
+categories = ["communication"]
 
 [dependencies]
 app_dirs = "1.2.1"
