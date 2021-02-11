@@ -68,6 +68,7 @@ pub enum Event<I> {
     ConversationLoaded(u32, String, String, Vec<HashMap<String, String>>),
     DataTransferEvent(String, String, u64, i32),
     IncomingTrustRequest(String, String, Vec<u8>, u64),
+    MemberPresenceChanged(String, String, bool),
     Resize,
 }
 
@@ -343,6 +344,23 @@ impl Jami {
             },
         );
 
+        let mr = MatchRule::new_signal("cx.ring.Ring.PresenceManager", "newBuddyNotification");
+        let txs = tx.clone();
+        let _ic = conn.add_match(mr).await.ok().expect("Lost connection").cb(
+            move |_, (account_id, uri, flag, _): (String, String, bool, String)| {
+                let mut txs = txs.clone();
+                tokio::spawn(async move {
+                    txs.send(Event::MemberPresenceChanged(
+                        account_id,
+                        uri,
+                        flag,
+                    ))
+                    .await
+                });
+                true
+            },
+        );
+
         let ten_millis = time::Duration::from_millis(10);
         loop {
             thread::sleep(ten_millis);
@@ -569,7 +587,6 @@ impl Jami {
     /**
      * Get account details
      * @param id the account id to build
-     * @return the account details
      */
     pub fn set_account_details(id: &str, details: HashMap<String, String>) {
         let conn = Connection::new_session().unwrap();
@@ -582,6 +599,26 @@ impl Jami {
             "cx.ring.Ring.ConfigurationManager",
             "setAccountDetails",
             (id, details),
+        );
+    }
+
+    /**
+     * Subscribe to a member presence
+     * @param id the account id to build
+     * @param uri to subscribe
+     * @param flag true to subscribe else stop
+     */
+    pub fn subscribe_presence(id: &str, uri: &str, flag: bool) {
+        let conn = Connection::new_session().unwrap();
+        let proxy = conn.with_proxy(
+            "cx.ring.Ring",
+            "/cx/ring/Ring/PresenceManager",
+            Duration::from_millis(5000),
+        );
+        let _: Result<(), _> = proxy.method_call(
+            "cx.ring.Ring.PresenceManager",
+            "subscribeBuddy",
+            (id, uri, flag),
         );
     }
 
