@@ -1,6 +1,6 @@
 [package]
 name = "jami-rs"
-version = "0.1.0"
+version = "0.2.0"
 description = "Jami library in Rust"
 authors = ["Sébastien Blin <contact@enconn.fr>"]
 edition = "2018"
